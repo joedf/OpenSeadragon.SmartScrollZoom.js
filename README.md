@@ -3,10 +3,13 @@ This is a small, simple plugin for OpenSeadragon, which detects how fast the use
 
 ## Fork Differences
 - `viewer.smartScrollZoom()` can be used to instantiate or modify the current smartScrollZoom instance. Before you had to call `.toggleEnable()` or `.setOptions()` on `viewer.smartScrollZoomInstance`.
+  - now you do `smartScrollZoom('toggleEnable')` and `smartScrollZoom({ ... option ... })` instead.
+  - this also works to set options: `smartScrollZoom('setOptions', { ... option ... })` 
 - Tweaked the default values to be less extreme
 - Starts off enabled unless specified in options
 - Scoll direction change is interpreted as a different scroll acceleration event. Otherwise, quickly scrolling in and out would also trigger the acceleration.
-- added `.getOptions()`
+- added `smartScrollZoom('getOptions')`
+- preserves and restores the original `zoomPerScroll` (before plugin init.) setting on disable.
 
 ## Quick Start
 
@@ -58,5 +61,5 @@ viewer.smartScrollZoom({
 To toggle on and off the enabled property, call toggleEnable():
 
 `````javascript
-viewer.smartScrollZoom.toggleEnable();
+viewer.smartScrollZoom('toggleEnable');
 `````
