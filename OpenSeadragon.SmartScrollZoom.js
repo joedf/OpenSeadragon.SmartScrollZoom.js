@@ -54,7 +54,7 @@
         this._OriginalZoomPerScroll = this.viewer.zoomPerScroll;
 
         options.timeThreshold = options.timeThreshold || 400;
-        options.minScrolls = options.minScrolls || 3;
+        options.minScrolls = options.minScrolls || 4;
         options.minZoomPerScroll = options.minZoomPerScroll || this._OriginalZoomPerScroll;
         options.maxZoomPerScroll = options.maxZoomPerScroll || 2.0;
         options.zoomIncrement = options.zoomIncrement || 0.075;
