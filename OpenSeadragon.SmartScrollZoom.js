@@ -43,6 +43,8 @@
             throw new Error("SmartScrollZoom must be set to a viewer");
         }
 
+        this._OriginalZoomPerScroll = this.viewer
+
         this.viewer = options.viewer; //Set viewer
         this.timeThreshold = options.timeThreshold || 400;
         this.minScrolls = options.minScrolls || 3;
@@ -115,6 +117,15 @@
                 return;
             }
 
+            //Set enabled
+            if (options.enabled !== undefined) {
+                this.enabled = options.enabled;
+                // restore zoomPerScroll using the minimum
+                if (!this.enabled) {
+                    this.viewer = this.minZoomPerScroll;
+                }
+            }
+
             //Set time threshold
             if (options.timeThreshold !== undefined) {
                 this.timeThreshold = options.timeThreshold;
@@ -138,11 +149,6 @@
             //Set zoom increment
             if (options.zoomIncrement !== undefined) {
                 this.zoomIncrement = options.zoomIncrement;
-            }
-
-            //Set enabled
-            if (options.enabled !== undefined) {
-                this.enabled = options.enabled;
             }
         },
 
