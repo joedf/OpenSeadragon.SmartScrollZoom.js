@@ -7,7 +7,7 @@ This is a small, simple plugin for OpenSeadragon, which detects how fast the use
   - this also works to set options: `smartScrollZoom('setOptions', { ... option ... })` 
 - Tweaked the default values to be less extreme
 - Starts off enabled unless specified in options
-- Scoll direction change is interpreted as a different scroll acceleration event. Otherwise, quickly scrolling in and out would also trigger the acceleration.
+- Scroll direction change is interpreted as a different scroll acceleration event. Otherwise, quickly scrolling in and out would also trigger the acceleration.
 - added `smartScrollZoom('getOptions')`
 - preserves and restores the original `zoomPerScroll` (before plugin init.) setting on disable.
 
