@@ -1,6 +1,14 @@
 # OpenSeadragonSmartScrollZoom
 This is a small, simple plugin for OpenSeadragon, which detects how fast the user is scrolling the mouse wheel and increases the zoom speed accordingly.
 
+## Fork Differences
+- `viewer.smartScrollZoom()` can be used to instantiate or modify the current smartScrollZoom instance. Before you had to call `.toggleEnable()` or `.setOptions()` on `viewer.smartScrollZoomInstance`.
+- Tweaked the default values to be less extreme
+- Starts off enabled unless specified in options
+- Scoll direction change is interpreted as a different scroll acceleration event. Otherwise, quickly scrolling in and out would also trigger the acceleration.
+
+## Quick Start
+
 Download and include `openseadragon-smartScrollZoom.js` after OpenSeadragon on your website.
 
 To use this plugin, include this after declaring a viewer instance:
