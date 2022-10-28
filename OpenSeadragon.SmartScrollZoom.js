@@ -6,19 +6,25 @@
 
  (function($){
 
-    $.Viewer.prototype.smartScrollZoom = function (options) {
-        var self = this.smartScrollZoom;
-        if (!self._instance) {
+    $.Viewer.prototype.smartScrollZoom = function (options, param2) {
+        if (!this._smartScrollZoomInstance) {
             options = options || {};
             options.viewer = this;
-            // default to enabled=true, if not defined.
             options.enabled = (typeof options.enabled == 'undefined') ? true : options.enabled;
-            self._instance = new $.SmartScrollZoom(options);
-            self.setOptions = self._instance.setOptions.bind(self._instance);
-            self.getOptions = self._instance.getOptions.bind(self._instance);
-            self.toggleEnable = self._instance.toggleEnable.bind(self._instance);
+
+            // init
+            this._smartScrollZoomInstance = new $.SmartScrollZoom(options);
         } else {
-            self._instance.setOptions(options);
+            if (typeof options == 'string') {
+                switch(options.toLowerCase()) {
+                    case 'getoptions': return getOptions.bind(this._smartScrollZoomInstance)();
+                    case 'toggleenable': return toggleEnable.bind(this._smartScrollZoomInstance)();
+                    case 'setoptions': return setOptions.bind(this._smartScrollZoomInstance)(param2);
+                };
+                return;
+            } else {
+                setOptions.bind(this._smartScrollZoomInstance)(options);
+            }
         }
     };
 
@@ -37,23 +43,25 @@
      * @param {Number} options.zoomIncrement - Amount to increment zoom factor by with every scroll after minScrolls
      * @param {Boolean} options.enabled - Whether or not the scroll zoom logic is currently active
      */
-    $.SmartScrollZoom = function (options) {
+    $.SmartScrollZoom = function(options) {
         //If this was not set to a viewer, throw an error
         if (!options.viewer) {
             throw new Error("SmartScrollZoom must be set to a viewer");
         }
-
-        this._OriginalZoomPerScroll = this.viewer
-
         this.viewer = options.viewer; //Set viewer
-        this.timeThreshold = options.timeThreshold || 400;
-        this.minScrolls = options.minScrolls || 3;
-        this.minZoomPerScroll = options.minZoomPerScroll || 1.2; //OpenSeadragon has a default of 1.2
-        this.maxZoomPerScroll = options.maxZoomPerScroll || 2.0;
-        this.zoomIncrement = options.zoomIncrement || 0.075;
-        this.enabled = options.enabled ? true : false;
+
+        // OpenSeadragon has a default of 1.2, but don't assume
+        this._OriginalZoomPerScroll = this.viewer.zoomPerScroll;
+
+        options.timeThreshold = options.timeThreshold || 400;
+        options.minScrolls = options.minScrolls || 3;
+        options.minZoomPerScroll = options.minZoomPerScroll || this._OriginalZoomPerScroll;
+        options.maxZoomPerScroll = options.maxZoomPerScroll || 2.0;
+        options.zoomIncrement = options.zoomIncrement || 0.075;
 
         var self = this;
+
+        setOptions.bind(self)(options);
 
         //Create handler for logic
         this.viewer.addHandler("canvas-scroll", function (evt) {
@@ -99,88 +107,85 @@
         });
     };
 
-    $.SmartScrollZoom.prototype = {
-        
-        /**
-         * Set new options
-         * 
-         * @function
-         * @memberof OpenSeadragon.SmartScrollZoom
-         * @since 1.0.0
-         * @version 1.0.0
-         * @param {Object} options 
-         */
-        setOptions: function (options) {
-            
-            //If no new options were specifed, do nothing
-            if (!options) {
-                return;
-            }
-
-            //Set enabled
-            if (options.enabled !== undefined) {
-                this.enabled = options.enabled;
-                // restore zoomPerScroll using the minimum
-                if (!this.enabled) {
-                    this.viewer = this.minZoomPerScroll;
-                }
-            }
-
-            //Set time threshold
-            if (options.timeThreshold !== undefined) {
-                this.timeThreshold = options.timeThreshold;
-            }
-
-            //Set minimum scroll number
-            if (options.minScrolls !== undefined) {
-                this.minScrolls = options.minScrolls;
-            }
-
-            //Set minimum zoom per scroll
-            if (options.minZoomPerScroll !== undefined) {
-                this.minZoomPerScroll = options.minZoomPerScroll;
-            }
-
-            //Set maximum zoom per scroll
-            if (options.maxZoomPerScroll !== undefined) {
-                this.maxZoomPerScroll = options.maxZoomPerScroll;
-            }
-
-            //Set zoom increment
-            if (options.zoomIncrement !== undefined) {
-                this.zoomIncrement = options.zoomIncrement;
-            }
-        },
-
-        /**
-         * Set new options
-         * 
-         * @function
-         * @memberof OpenSeadragon.SmartScrollZoom
-         * @since 1.2.0
-         * @version 1.2.0
-         */
-        getOptions: function () {
-            return {
-                timeThreshold: this.timeThreshold,
-                minScrolls: this.minScrolls,
-                minZoomPerScroll: this.minZoomPerScroll,
-                maxZoomPerScroll: this.maxZoomPerScroll,
-                zoomIncrement: this.zoomIncrement,
-                enabled: this.enabled
-            };
-        },
-
-        /**
-         * Toggle the enabled option
-         * 
-         * @function
-         * @memberof OpenSeadragon.SmartScrollZoom
-         * @since 1.0.0
-         * @version 1.0.0
-         */
-        toggleEnable: function () {
-            this.enabled = !this.enabled;
+    /**
+     * Set new options
+     * 
+     * @function
+     * @memberof OpenSeadragon.SmartScrollZoom
+     * @since 1.0.0
+     * @version 1.0.0
+     * @param {Object} options 
+     */
+    function setOptions(options) {
+        //If no new options were specifed, do nothing
+        if (!options) {
+            return;
         }
-    };
+
+        //Set enabled
+        if (options.enabled !== undefined) {
+            this.enabled = options.enabled;
+            // restore zoomPerScroll
+            if (!this.enabled) {
+                this.viewer.zoomPerScroll = this._OriginalZoomPerScroll;
+            }
+        }
+
+        //Set time threshold
+        if (options.timeThreshold !== undefined) {
+            this.timeThreshold = options.timeThreshold;
+        }
+
+        //Set minimum scroll number
+        if (options.minScrolls !== undefined) {
+            this.minScrolls = options.minScrolls;
+        }
+
+        //Set minimum zoom per scroll
+        if (options.minZoomPerScroll !== undefined) {
+            this.minZoomPerScroll = options.minZoomPerScroll;
+        }
+
+        //Set maximum zoom per scroll
+        if (options.maxZoomPerScroll !== undefined) {
+            this.maxZoomPerScroll = options.maxZoomPerScroll;
+        }
+
+        //Set zoom increment
+        if (options.zoomIncrement !== undefined) {
+            this.zoomIncrement = options.zoomIncrement;
+        }
+    }
+
+    /**
+     * Set new options
+     * 
+     * @function
+     * @memberof OpenSeadragon.SmartScrollZoom
+     * @since 1.2.0
+     * @version 1.2.0
+     */
+    function getOptions() {
+        return {
+            timeThreshold: this.timeThreshold,
+            minScrolls: this.minScrolls,
+            minZoomPerScroll: this.minZoomPerScroll,
+            maxZoomPerScroll: this.maxZoomPerScroll,
+            zoomIncrement: this.zoomIncrement,
+            enabled: this.enabled
+        };
+    }
+
+    /**
+     * Toggle the enabled option
+     * 
+     * @function
+     * @memberof OpenSeadragon.SmartScrollZoom
+     * @since 1.0.0
+     * @version 1.0.0
+     */
+    function toggleEnable() {
+        this.enabled = !this.enabled;
+    }
+
  })(OpenSeadragon);
