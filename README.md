@@ -1,4 +1,4 @@
-# OpenSeadragonSmartScrollZoom
+# OpenSeadragon.SmartScrollZoom.js
 This is a small, simple plugin for OpenSeadragon, which detects how fast the user is scrolling the mouse wheel and increases the zoom speed accordingly.
 
 ## Fork Differences
