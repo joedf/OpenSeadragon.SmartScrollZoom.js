@@ -1,18 +1,23 @@
 /**
  * @file OpenSeadragon plugin that allows for adjustment of zoom speed based upon the speed that the user scrolls the mouse wheel
- * @author Bassil Virk
- * @version 1.0.0
+ * @author Bassil Virk, Joe DF
+ * @version 1.2.0
  */
 
  (function($){
 
     $.Viewer.prototype.smartScrollZoom = function (options) {
-        if (!this.smartScrollZoomInstance) {
+        var self = this.smartScrollZoom;
+        if (!self._instance) {
             options = options || {};
             options.viewer = this;
-            this.smartScrollZoomInstance = new $.SmartScrollZoom(options);
+            // default to enabled=true, if not defined.
+            options.enabled = (typeof options.enabled == 'undefined') ? true : options.enabled;
+            self._instance = new $.SmartScrollZoom(options);
+            self.setOptions = self._instance.setOptions;
+            self.toggleEnable = self._instance.toggleEnable;
         } else {
-            this.smartScrollZoomInstance.setOptions(options);
+            self._instance.setOptions(options);
         }
     };
 
@@ -39,35 +44,37 @@
 
         this.viewer = options.viewer; //Set viewer
         this.timeThreshold = options.timeThreshold || 400;
-        this.minScrolls = options.minScrolls || 2;
+        this.minScrolls = options.minScrolls || 3;
         this.minZoomPerScroll = options.minZoomPerScroll || 1.2; //OpenSeadragon has a default of 1.2
-        this.maxZoomPerScroll = options.maxZoomPerScroll || 2.5;
-        this.zoomIncrement = options.zoomIncrement || 0.2;
+        this.maxZoomPerScroll = options.maxZoomPerScroll || 2.0;
+        this.zoomIncrement = options.zoomIncrement || 0.075;
         this.enabled = options.enabled ? true : false;
 
         var self = this;
 
         //Create handler for logic
-        this.viewer.addHandler("canvas-scroll", function () {
+        this.viewer.addHandler("canvas-scroll", function (evt) {
             //Do nothing if not enabled
             if (!self.enabled) {
                 return;
             }
 
             //Create var to count number of consecutive scrolls that have taken place within the specified time limit of each other
-            if (typeof self.scrollNum == 'undefined') {
-                self.scrollNum = 0;
-            }
-    
+            if (typeof self.scrollNum == 'undefined') { self.scrollNum = 0; }
+            
             //Create var to store the time of the previous scroll that occurred
-            if (typeof self.lastScroll == 'undefined') {
-                self.lastScroll = new Date();
-            }
-    
+            if (typeof self.lastScroll == 'undefined') { self.lastScroll = new Date(); }
+            
+            //Create var to store the scroll direction
+            if (typeof self.lastScrollDir == 'undefined') { self.lastScrollDir = 0; }
+
+            self.currentScrollDir = (evt.scroll < 0) ? -1 : 1; //The scroll direction
             self.currentScroll = new Date(); //Time that this scroll occurred at
     
             //If the last scroll was less than 400 ms ago, increase the scroll count
-            if (self.currentScroll - self.lastScroll < self.timeThreshold) {
+            //And if we still scrolling in the same direction
+            if ((self.currentScroll - self.lastScroll < self.timeThreshold)
+            && (self.currentScrollDir == self.lastScrollDir)) {
                 self.scrollNum++;
             }
             //Otherwise, reset the count and zoom speed
@@ -85,6 +92,7 @@
             }
     
             self.lastScroll = self.currentScroll; //Set last scroll to now
+            self.lastScrollDir = self.currentScrollDir; //Set last scroll direction
         });
     };
 
