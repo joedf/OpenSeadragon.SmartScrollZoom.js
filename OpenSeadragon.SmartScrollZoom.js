@@ -14,8 +14,9 @@
             // default to enabled=true, if not defined.
             options.enabled = (typeof options.enabled == 'undefined') ? true : options.enabled;
             self._instance = new $.SmartScrollZoom(options);
-            self.setOptions = self._instance.setOptions;
-            self.toggleEnable = self._instance.toggleEnable;
+            self.setOptions = self._instance.setOptions.bind(self._instance);
+            self.getOptions = self._instance.getOptions.bind(self._instance);
+            self.toggleEnable = self._instance.toggleEnable.bind(self._instance);
         } else {
             self._instance.setOptions(options);
         }
@@ -138,6 +139,30 @@
             if (options.zoomIncrement !== undefined) {
                 this.zoomIncrement = options.zoomIncrement;
             }
+
+            //Set enabled
+            if (options.enabled !== undefined) {
+                this.enabled = options.enabled;
+            }
+        },
+
+        /**
+         * Set new options
+         * 
+         * @function
+         * @memberof OpenSeadragon.SmartScrollZoom
+         * @since 1.2.0
+         * @version 1.2.0
+         */
+        getOptions: function () {
+            return {
+                timeThreshold: this.timeThreshold,
+                minScrolls: this.minScrolls,
+                minZoomPerScroll: this.minZoomPerScroll,
+                maxZoomPerScroll: this.maxZoomPerScroll,
+                zoomIncrement: this.zoomIncrement,
+                enabled: this.enabled
+            };
         },
 
         /**
